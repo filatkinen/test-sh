@@ -26,3 +26,7 @@ jobs:
 
     - name: Test
       run: ./test.sh
+     
+    - name: cat
+      run: cat /tmp/telnet.out /tmp/nc.out
+      
