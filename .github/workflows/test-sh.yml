@@ -1,43 +1,49 @@
-# This is a basic workflow to help you get started with Actions
+name: Otus homework tests
 
-name: CI
-
-# Controls when the workflow will run
 on:
-  # Triggers the workflow on push or pull request events but only for the "main" branch
   push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+    branches:
+      - hw*
 
-  # Allows you to run this workflow manually from the Actions tab
-  workflow_dispatch:
+env:
+  GO111MODULE: "on"
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
-  tests:
-    # The type of runner that the job will run on
+  lint:
     runs-on: ubuntu-latest
-
-    # Steps represent a sequence of tasks that will be executed as part of the job
+    if: ${{ !contains(github.ref, 'calendar') }}
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v3
+      - name: Extract branch name
+        run: echo "BRANCH=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
 
-      # Runs a single command using the runners shell
-      - name: Run a one-line script
-        run: echo Hello, world!
-        
-      - name: ls
-        shell: bash
-        run: ls -la
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: ~1.19
+
+      - name: Check out code
+        uses: actions/checkout@v3
+
+      - name: Linters
+        uses: golangci/golangci-lint-action@v3
+        with:
+          version: v1.50.1
+          working-directory: ${{ env.BRANCH }}
+
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: ^1.19
 
       - name: pwd
-        shell: bash
         run: pwd
+        working-directory: ${{ env.BRANCH }}
 
       - name: Bash tests
         shell: bash
         run: ./test.sh
         working-directory: ${{ env.BRANCH }}
+
